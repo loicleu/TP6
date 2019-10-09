@@ -62,7 +62,40 @@ public class HsqlDBTest {
 		String name = myObject.nameOfCustomer(-1);
 		assertNull("name should be null, customer does not exist !", name);
 	}
+        	
+	@Test
+	public void findUnknownProduct() throws SQLException {
+		assertNull(myObject.findProduct(-1));
+	}
+	
+	@Test
+	public void findExistingProduct() throws SQLException {
+		// le produit 1 est défini dans le jeu de test SQL
+		Product p = myObject.findProduct(1);
+		assertEquals("Chair Shoe", p.getname());
+	}
 
+	@Test
+	public void canCreateNewProduct() throws SQLException {
+		Product nouveau = new Product(2, "Un nouveau produit", 12.45f);
+		myObject.insertProduct(nouveau);
+		// On vérifie qu'on peut le retrouver
+		assertEquals(nouveau, myObject.findProduct(2));
+	}
+
+	@Test(expected = SQLException.class)
+	public void cannotCreateDuplicateKeys() throws SQLException {
+		// Le produit 1 existe déjà dans la base de test
+		Product existant = new Product(1, "Un produit qui existe", 12.45f);
+		myObject.insertProduct(existant); // On doit avoir une exception ici
+	}
+
+	@Test(expected = SQLException.class)
+	public void priceMustBePositive() throws SQLException {
+		// Le produit 1 existe déjà dans la base de test
+		Product bad = new Product(2, "Un produit au prix négatif", -12.45f);
+		myObject.insertProduct(bad); // On doit avoir une exception ici
+	}
 	public static DataSource getDataSource() {
 		org.hsqldb.jdbc.JDBCDataSource ds = new org.hsqldb.jdbc.JDBCDataSource();
 		ds.setDatabase("jdbc:hsqldb:mem:testcase;shutdown=true");
